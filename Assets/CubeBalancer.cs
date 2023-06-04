@@ -26,7 +26,7 @@ public class CubeBalancer : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         targetRotation = rb.rotation;
 
-        Invoke("TurnCube", 2);
+        // Invoke("TurnCube", 2.0   f);
     }
 
     private void TurnCube() {
@@ -74,7 +74,7 @@ public class CubeBalancer : MonoBehaviour
 
         // Get D force component by just inverting angular velocity and scaling
         Vector3 dForce = -rb.angularVelocity * D;
-        LogV("Angular Veclocity", rb.angularVelocity);
+        LogV("Angular Velocity", rb.angularVelocity);
         LogV("dForce", dForce);
 
         // Calculate the control output by just summing each of the components
