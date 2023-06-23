@@ -102,7 +102,7 @@ public class CubeBalancer : MonoBehaviour
         AngleAxis errorAA = toAngleAxis(error);
         float mag = errorAA.angle / 180.0f;
         Vector3 pForce = errorAA.axis * mag * P;
-        LogV("pForce", pForce);
+        LogV2("pForce", pForce);
 
         // Calculate the integral term
         // TODO(awjc): I term
@@ -118,21 +118,22 @@ public class CubeBalancer : MonoBehaviour
         // TODO(awjc): Last N errors instead of cumulative?
         // TODO(awjc): Diminishing geometric decay, *= 0.9f each frame
         // integralAxis = errorAA
-        integralAngle += errorAA.angle * Time.fixedDeltaTime;
+        // integralAngle += errorAA.angle * Time.fixedDeltaTime;
 
-        integralTorques += errorAA.angle * errorAA.axis * Time.fixedDeltaTime;
+        integralTorques += errorAA.angle * errorAA.axis;
 
-        LogV2("integralTorques", integralTorques);
+        // LogV2("integralTorques", integralTorques);
         // integralAngle = (integralAngle * 10 + errorAA.angle * Time.fixedDeltaTime) / 10;
 
-        float iProp = (integralAngle + errorAA.angle == 0) ? 0 :
-                integralAngle / (integralAngle + errorAA.angle);
+        // float iProp = (integralAngle + errorAA.angle == 0) ? 0 :
+        //         integralAngle / (integralAngle + errorAA.angle);
 
-        integralAxis = Vector3.Lerp(errorAA.axis, integralAxis, iProp);
+        // integralAxis = Vector3.Lerp(errorAA.axis, integralAxis, iProp);
 
         // Vector3 iForce = Vector3.zero;
         // Vector3 iForce = integralAxis * integralAngle * Time.fixedDeltaTime * I;
         Vector3 iForce = integralTorques * I;
+        LogV2("iForce", iForce);
 
         // if (integralAngle > 1e-5f) {
         //     float ip = -(Mathf.Log(integralAngle) - 1) / 5;
@@ -144,9 +145,9 @@ public class CubeBalancer : MonoBehaviour
         // Debug.Log(string.Format("{0} , {1} , {2}", integralAngle, integralAxis, iForce));
 
         // Get D force component by just inverting angular velocity and scaling
-        Vector3 dForce = -rb.angularVelocity * Time.fixedDeltaTime * D;
+        Vector3 dForce = -rb.angularVelocity * D;
         LogV("Angular Velocity", rb.angularVelocity);
-        LogV("dForce", dForce);
+        LogV2("dForce", dForce);
 
         // Calculate the control output by just summing each of the components
         Vector3 outputForce = pForce + iForce + dForce;
@@ -154,7 +155,7 @@ public class CubeBalancer : MonoBehaviour
 
         // Multiply by a global scaling strength
         Vector3 scaled = outputForce * ScalingStrength;
-        LogV("scaled", scaled);
+        LogV2("scaled", scaled);
 
         // Debug.Log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
