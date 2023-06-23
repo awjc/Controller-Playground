@@ -381,8 +381,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   P: 11
-  I: 0.001
-  D: 1
+  I: 0.0002
+  D: 0.2
   ScalingStrength: 20
   targetRot: {x: 0, y: 0, z: 0, w: 1}
   targetRotation: {x: 0, y: 0, z: 0, w: 0}

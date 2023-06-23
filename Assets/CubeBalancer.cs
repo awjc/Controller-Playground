@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -83,15 +84,16 @@ public class CubeBalancer : MonoBehaviour
         float iAngle;
         Vector3 iAxis;
         q.ToAngleAxis(out iAngle, out iAxis);
+        // Keep rotations below 180 degrees by performing the corresponding
+        // rotation on the  opposite axis
+        if (iAngle >= 180.0f) {
+            iAngle = 360.0f - iAngle;
+            iAxis = -iAxis;
+        }
         return new AngleAxis(iAngle, iAxis);
     }
 
-    private void FixedUpdate()
-    {
-        if (rb == null) {
-            Debug.Log("Null Rigidbody, skipping this update");
-            return;
-        }
+    private void ApplyControllerForce() {
 
         // Calculate the error between the current rotation and the target rotation
         Quaternion currentRotation = transform.rotation;
@@ -100,9 +102,14 @@ public class CubeBalancer : MonoBehaviour
 
         // Calculate the proportional term
         AngleAxis errorAA = toAngleAxis(error);
+
+        float tol = 1e-3f;
+        if (errorAA.angle < tol || Mathf.Abs(errorAA.angle - 360.0f) < tol) {
+            return;
+        }
         float mag = errorAA.angle / 180.0f;
         Vector3 pForce = errorAA.axis * mag * P;
-        LogV2("pForce", pForce);
+        LogV("pForce", pForce);
 
         // Calculate the integral term
         // TODO(awjc): I term
@@ -111,7 +118,7 @@ public class CubeBalancer : MonoBehaviour
         // Quaternion integralTerm = Quaternion.LerpUnclamped(Quaternion.identity, integral, I);
 
 
-        AngleAxis prevErrAA = toAngleAxis(previousError);
+        // AngleAxis prevErrAA = toAngleAxis(previousError);
 
         // Debug.Log(string.Format("$$$$$$$$$$$  {0}  vs  {1}     ({2}) ##############", prevErrAA.axis, errorAA.axis, Time.fixedDeltaTime));
 
@@ -133,7 +140,7 @@ public class CubeBalancer : MonoBehaviour
         // Vector3 iForce = Vector3.zero;
         // Vector3 iForce = integralAxis * integralAngle * Time.fixedDeltaTime * I;
         Vector3 iForce = integralTorques * I;
-        LogV2("iForce", iForce);
+        LogV("iForce", iForce);
 
         // if (integralAngle > 1e-5f) {
         //     float ip = -(Mathf.Log(integralAngle) - 1) / 5;
@@ -147,7 +154,7 @@ public class CubeBalancer : MonoBehaviour
         // Get D force component by just inverting angular velocity and scaling
         Vector3 dForce = -rb.angularVelocity * D;
         LogV("Angular Velocity", rb.angularVelocity);
-        LogV2("dForce", dForce);
+        LogV("dForce", dForce);
 
         // Calculate the control output by just summing each of the components
         Vector3 outputForce = pForce + iForce + dForce;
@@ -159,11 +166,27 @@ public class CubeBalancer : MonoBehaviour
 
         // Debug.Log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
+        if (System.Double.IsNaN(scaled.x) ||
+            System.Double.IsNaN(scaled.y) ||
+            System.Double.IsNaN(scaled.z)) {
+            return;
+        }
+
         // Apply the angular velocity as force to the object's rigidbody
         rb.AddTorque(scaled, ForceMode.Force);
 
         // Store the current error for the next frame
         // previousError = error;
+    }
+
+    private void FixedUpdate()
+    {
+        if (rb == null) {
+            Debug.Log("Null Rigidbody, skipping this update");
+            return;
+        }
+
+        ApplyControllerForce();
     }
 
     private Vector3 centerAngles(Vector3 input) {
