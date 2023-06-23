@@ -33,6 +33,8 @@ public class CubeBalancer : MonoBehaviour
 
     private Vector3 integralAxis;
 
+    private Vector3 integralTorques;
+
     private Rigidbody rb;
 
     private void Start()
@@ -59,8 +61,12 @@ public class CubeBalancer : MonoBehaviour
         // Debug.Log(string.Format("{0}: {1}    (Q {2}, Normalized {3})", id, q.eulerAngles, q, q.normalized));
     }
 
-    private void LogV(string id, Vector3 v) {
+     private void LogV(string id, Vector3 v) {
         // Debug.Log(string.Format("{0}: {1}", id, v));
+    }
+
+    private void LogV2(string id, Vector3 v) {
+        Debug.Log(string.Format("{0}: {1}", id, v));
     }
 
     private class AngleAxis {
@@ -112,7 +118,12 @@ public class CubeBalancer : MonoBehaviour
         // TODO(awjc): Last N errors instead of cumulative?
         // TODO(awjc): Diminishing geometric decay, *= 0.9f each frame
         // integralAxis = errorAA
-        integralAngle = (integralAngle * 10 + errorAA.angle * Time.fixedDeltaTime) / 10;
+        integralAngle += errorAA.angle * Time.fixedDeltaTime;
+
+        integralTorques += errorAA.angle * errorAA.axis * Time.fixedDeltaTime;
+
+        LogV2("integralTorques", integralTorques);
+        // integralAngle = (integralAngle * 10 + errorAA.angle * Time.fixedDeltaTime) / 10;
 
         float iProp = (integralAngle + errorAA.angle == 0) ? 0 :
                 integralAngle / (integralAngle + errorAA.angle);
@@ -120,14 +131,15 @@ public class CubeBalancer : MonoBehaviour
         integralAxis = Vector3.Lerp(errorAA.axis, integralAxis, iProp);
 
         // Vector3 iForce = Vector3.zero;
-        Vector3 iForce = integralAxis * integralAngle * Time.fixedDeltaTime * I;
+        // Vector3 iForce = integralAxis * integralAngle * Time.fixedDeltaTime * I;
+        Vector3 iForce = integralTorques * I;
 
-        if (integralAngle > 1e-5f) {
-            float ip = -(Mathf.Log(integralAngle) - 1) / 5;
-            float factor = Mathf.Lerp(0.999f, 0.95f, ip);
-            Debug.Log(string.Format("{0} , {1} , {2}", integralAngle, ip, factor));
-            integralAngle *= factor;
-        }
+        // if (integralAngle > 1e-5f) {
+        //     float ip = -(Mathf.Log(integralAngle) - 1) / 5;
+        //     float factor = Mathf.Lerp(0.999f, 0.95f, ip);
+        //     Debug.Log(string.Format("{0} , {1} , {2}", integralAngle, ip, factor));
+        //     integralAngle *= factor;
+        // }
 
         // Debug.Log(string.Format("{0} , {1} , {2}", integralAngle, integralAxis, iForce));
 
