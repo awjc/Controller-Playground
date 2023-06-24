@@ -38,6 +38,9 @@ public class CubeBalancer : MonoBehaviour
 
     private Rigidbody rb;
 
+    public float errorAngle;
+    public Vector3 errorAxis;
+
     private void Start()
     {
         Debug.Log("AWJC CubeBalancer Loaded");
@@ -67,7 +70,7 @@ public class CubeBalancer : MonoBehaviour
     }
 
     private void LogV2(string id, Vector3 v) {
-        Debug.Log(string.Format("{0}: {1}", id, v));
+        // Debug.Log(string.Format("{0}: {1}", id, v));
     }
 
     private class AngleAxis {
@@ -93,7 +96,10 @@ public class CubeBalancer : MonoBehaviour
         return new AngleAxis(iAngle, iAxis);
     }
 
+    public int frameCount = 0;
+
     private void ApplyControllerForce() {
+        frameCount += 1;
 
         // Calculate the error between the current rotation and the target rotation
         Quaternion currentRotation = transform.rotation;
@@ -102,6 +108,8 @@ public class CubeBalancer : MonoBehaviour
 
         // Calculate the proportional term
         AngleAxis errorAA = toAngleAxis(error);
+        errorAxis = errorAA.axis;
+        errorAngle = errorAA.angle;
 
         float tol = 1e-3f;
         if (errorAA.angle < tol || Mathf.Abs(errorAA.angle - 360.0f) < tol) {
