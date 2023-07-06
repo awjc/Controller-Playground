@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System.Text.Json;
 
 /*
 
@@ -14,7 +14,7 @@ Ideas:
 */
 
 
-public class CubeBalancer : MonoBehaviour
+public class CubeBalancer : MonoBehaviour, ISaveable
 {
   public float P = 1f;
   public float I = 0f;
@@ -40,6 +40,25 @@ public class CubeBalancer : MonoBehaviour
 
   public float errorAngle;
   public Vector3 errorAxis;
+
+  public string ToJsonSaveData()
+  {
+    // IDictionary<string, string> ret = new Dictionary<string, string>();
+
+    // ret.Add('a', 'b');
+    // ret.Add('c', 'd');
+
+    // return ret;
+
+    // string ret = JsonSerializer.Serialize(this);
+    // return ret;
+    return "awjc";
+  }
+
+  public void FromJsonSaveData(string jsonSaveData)
+  {
+
+  }
 
   private void Start()
   {
