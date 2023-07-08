@@ -1,7 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 public class SaverLoader : MonoBehaviour
 {
@@ -37,11 +40,64 @@ public class SaverLoader : MonoBehaviour
   public void DoSave()
   {
     Debug.Log("Saving");
+
+    var list = new List<string>() { "1", "2" };
+    GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+    var allSaveable = Interfaces.GetAllInterfaces<ISaveable>(allObjects);
+
+    foreach (ISaveable savObj in allSaveable)
+    {
+      Debug.Log(string.Format("{0} : {1}", savObj.UniqueNameId(), savObj.ToJsonSaveData()));
+    }
+
+    Debug.Log(allObjects);
+    Debug.Log(allSaveable);
+
+    SaveFile("ABCDEFG This is a test data");
+  }
+
+  public void SaveFile(string data)
+  {
+    string destination = Application.persistentDataPath + "/save.dat";
+    Debug.Log(destination);
+    FileStream file;
+
+    if (File.Exists(destination)) file = File.OpenWrite(destination);
+    else file = File.Create(destination);
+
+    // GameData data = new GameData(currentScore, currentName, currentTimePlayed);
+    BinaryFormatter bf = new BinaryFormatter();
+    bf.Serialize(file, data);
+    file.Close();
+  }
+
+  public void LoadFile()
+  {
+    string destination = Application.persistentDataPath + "/save.dat";
+    FileStream file;
+
+    if (File.Exists(destination)) file = File.OpenRead(destination);
+    else
+    {
+      Debug.LogError("File not found");
+      return;
+    }
+
+    BinaryFormatter bf = new BinaryFormatter();
+    // GameData data = (GameData) bf.Deserialize(file);
+    string data = (string)bf.Deserialize(file);
+    file.Close();
+
+    Debug.Log(data);
   }
 
   public void DoLoad()
   {
     Debug.Log("Loading");
+
+    LoadFile();
+
+    // var go = GameObject.Find(name);
   }
 
   private void OnEnable()

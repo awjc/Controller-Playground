@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text.Json;
+using Newtonsoft.Json;
 
 /*
 
@@ -36,23 +37,32 @@ public class CubeBalancer : MonoBehaviour, ISaveable
 
   private Vector3 integralTorques;
 
-  private Rigidbody rb;
+  private new Rigidbody rigidbody { get { return GetComponent<Rigidbody>(); } }
 
   public float errorAngle;
   public Vector3 errorAxis;
 
+  public string UniqueNameId()
+  {
+    // TODO(awjc) - use GetInstanceID().ToString() ?
+    return this.name;
+  }
+
   public string ToJsonSaveData()
   {
-    // IDictionary<string, string> ret = new Dictionary<string, string>();
+    IDictionary<string, string> ret = new Dictionary<string, string>();
 
-    // ret.Add('a', 'b');
-    // ret.Add('c', 'd');
+    ret.Add("a", "b");
+    ret.Add("c", "d");
 
     // return ret;
 
-    // string ret = JsonSerializer.Serialize(this);
-    // return ret;
-    return "awjc";
+    // string ret = JsonConvert.SerializeObject(this, Formatting.Indented, new JsonSerializerSettings
+    // {
+    //   ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+    // });
+
+    return JsonConvert.SerializeObject(ret);
   }
 
   public void FromJsonSaveData(string jsonSaveData)
@@ -64,19 +74,14 @@ public class CubeBalancer : MonoBehaviour, ISaveable
   {
     Debug.Log("AWJC CubeBalancer Loaded");
     Debug.Log(string.Format("Params: P {0} I {1} D {2}", P, I, D));
-    rb = GetComponent<Rigidbody>();
-    targetRotation = rb.rotation;
+    targetRotation = rigidbody.rotation;
     integral = Vector3.zero;
     integralAxis = Vector3.up;
   }
 
   private void TurnCube()
   {
-    // targetRotation = Quaternion.Euler(0, 45, 0);
     targetRotation = targetRot;
-    // Debug.Log("TURNING");
-    // Vector3 torque = new Vector3(1.0f, 0.0f, 0.0f) * 10;
-    // rb?.AddTorque(torque, ForceMode.Force);
   }
 
   private void LogQ(string id, Quaternion q)
@@ -85,11 +90,6 @@ public class CubeBalancer : MonoBehaviour, ISaveable
   }
 
   private void LogV(string id, Vector3 v)
-  {
-    // Debug.Log(string.Format("{0}: {1}", id, v));
-  }
-
-  private void LogV2(string id, Vector3 v)
   {
     // Debug.Log(string.Format("{0}: {1}", id, v));
   }
@@ -152,8 +152,8 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     LogV("iForce", iForce);
 
     // Get D force component by just inverting angular velocity and scaling
-    Vector3 dForce = -rb.angularVelocity * D;
-    LogV("Angular Velocity", rb.angularVelocity);
+    Vector3 dForce = -rigidbody.angularVelocity * D;
+    LogV("Angular Velocity", rigidbody.angularVelocity);
     LogV("dForce", dForce);
 
     // Calculate the control output by just summing each of the components
@@ -162,7 +162,7 @@ public class CubeBalancer : MonoBehaviour, ISaveable
 
     // Multiply by a global scaling strength
     Vector3 scaled = outputForce * ScalingStrength;
-    LogV2("scaled", scaled);
+    LogV("scaled", scaled);
 
     if (System.Double.IsNaN(scaled.x) ||
     System.Double.IsNaN(scaled.y) ||
@@ -172,12 +172,12 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     }
 
     // Apply the angular velocity as force to the object's rigidbody
-    rb.AddTorque(scaled, ForceMode.Force);
+    rigidbody.AddTorque(scaled, ForceMode.Force);
 }
 
   private void FixedUpdate()
   {
-    if (rb == null)
+    if (rigidbody == null)
     {
       Debug.Log("Null Rigidbody, skipping this update");
       return;
