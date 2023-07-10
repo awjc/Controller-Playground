@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Text.Json;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 /*
 
@@ -48,12 +49,13 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     return this.name;
   }
 
-  public string ToJsonSaveData()
-  {
-    IDictionary<string, string> ret = new Dictionary<string, string>();
 
-    ret.Add("a", "b");
-    ret.Add("c", "d");
+
+  public IDictionary<string, dynamic> ToJsonSaveData()
+  {
+    var ret = new Dictionary<string, dynamic>();
+
+    ret.Add("transform", new SerializedTransform(this.transform));
 
     // return ret;
 
@@ -61,13 +63,15 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     // {
     //   ReferenceLoopHandling = ReferenceLoopHandling.Ignore
     // });
-
-    return JsonConvert.SerializeObject(ret);
+    return ret;
+    // return JsonConvert.SerializeObject(ret);
   }
 
-  public void FromJsonSaveData(string jsonSaveData)
+  public void FromJsonSaveData(IDictionary<string, object> jsonSaveData)
   {
-
+    Debug.Log(string.Format(">> FromJson called with >> {0}", jsonSaveData));
+    var serializedTransform = (jsonSaveData["transform"] as JObject)?.ToObject<SerializedTransform>();
+    serializedTransform?.CopyToTransform(this.transform);
   }
 
   private void Start()

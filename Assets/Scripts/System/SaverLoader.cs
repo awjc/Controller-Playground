@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 public class SaverLoader : MonoBehaviour
 {
@@ -39,20 +41,24 @@ public class SaverLoader : MonoBehaviour
 
   public void DoSave()
   {
-    Debug.Log("Saving");
+    Debug.Log("Saving...");
 
-    GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+    List<GameObject> allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>().ToList();
     var allSaveable = Interfaces.GetAllInterfaces<ISaveable>(allObjects);
 
-    foreach (ISaveable savObj in allSaveable)
+    var objDict = new Dictionary<string, IDictionary<string, object>>();
+
+    foreach (ISaveable saveObj in allSaveable)
     {
-      Debug.Log(string.Format("{0} : {1}", savObj.UniqueNameId(), savObj.ToJsonSaveData()));
+      Debug.Log(string.Format("{0} : {1}", saveObj.UniqueNameId(), saveObj.ToJsonSaveData()));
+      objDict[saveObj.UniqueNameId()] = saveObj.ToJsonSaveData();
     }
 
-    Debug.Log(allObjects);
-    Debug.Log(allSaveable);
+    Debug.Log(string.Join(", ", allObjects));
+    Debug.Log(string.Join(", ", allSaveable));
 
-    SaveFile("ABCDEFG This is a test data");
+    var fileData = JsonConvert.SerializeObject(objDict);
+    SaveFile(fileData);
   }
 
   public void SaveFile(string data)
@@ -67,11 +73,26 @@ public class SaverLoader : MonoBehaviour
     string destination = Application.persistentDataPath + "/save.txt";
     var data = System.IO.File.ReadAllText(destination);
     Debug.Log(data);
+    var objDict = JsonConvert.DeserializeObject<IDictionary<string, IDictionary<string, object>>>(data);
+
+    Debug.Log(string.Join(System.Environment.NewLine, objDict));
+    foreach (var kv in objDict)
+    {
+      var go = GameObject.Find(kv.Key);
+      if (go != null)
+      {
+        var allSaveable = Interfaces.GetInterfaces<ISaveable>(go);
+        foreach (var saveable in allSaveable)
+        {
+          saveable.FromJsonSaveData(kv.Value);
+        }
+      }
+    }
   }
 
   public void DoLoad()
   {
-    Debug.Log("Loading");
+    Debug.Log("Loading...");
 
     LoadFile();
 
