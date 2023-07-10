@@ -76,16 +76,18 @@ public class SaverLoader : MonoBehaviour
 
     foreach (var kv in objDict)
     {
-      var go = GameObject.Find(kv.Key);
-      if (go != null)
+      var gameObjectName = kv.Key;
+      var componentDicts = kv.Value;
+      var gameObject = GameObject.Find(gameObjectName);
+      if (gameObject != null)
       {
-        var allSaveable = Interfaces.GetInterfaces<ISaveable>(go);
+        var allSaveable = Interfaces.GetInterfaces<ISaveable>(gameObject);
         foreach (var saveable in allSaveable)
         {
           var compName = saveable.ComponentName();
-          if (kv.Value.ContainsKey(compName))
+          if (componentDicts.ContainsKey(compName))
           {
-            saveable.FromSaveData(kv.Value[compName]);
+            saveable.FromSaveData(componentDicts[compName]);
           }
         }
       }
