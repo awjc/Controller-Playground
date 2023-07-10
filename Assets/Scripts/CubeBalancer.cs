@@ -51,9 +51,9 @@ public class CubeBalancer : MonoBehaviour, ISaveable
 
 
 
-  public IDictionary<string, dynamic> ToJsonSaveData()
+  public IDictionary<string, object> ToJsonSaveData()
   {
-    var ret = new Dictionary<string, dynamic>();
+    var ret = new Dictionary<string, object>();
 
     ret.Add("transform", new SerializedTransform(this.transform));
 
