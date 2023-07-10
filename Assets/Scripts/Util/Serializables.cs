@@ -6,12 +6,12 @@ using Newtonsoft.Json;
 public class SerializedVector3
 {
   [JsonProperty]
-  private float[] _v3;
+  private float[] vec3;
 
   [JsonConstructor]
-  private SerializedVector3(float[] _vector3)
+  private SerializedVector3(float[] vector3)
   {
-    this._v3 = _vector3;
+    this.vec3 = vector3;
   }
 
   public static SerializedVector3 Box(Vector3 inV)
@@ -21,7 +21,7 @@ public class SerializedVector3
 
   public Vector3 Unbox()
   {
-    return new Vector3(_v3[0], _v3[1], _v3[2]);
+    return new Vector3(vec3[0], vec3[1], vec3[2]);
   }
 }
 
@@ -29,12 +29,12 @@ public class SerializedVector3
 public class SerializedQuaternion
 {
   [JsonProperty]
-  private float[] _q;
+  private float[] quat;
 
   [JsonConstructor]
   private SerializedQuaternion(float[] quaternion)
   {
-    this._q = quaternion;
+    this.quat = quaternion;
   }
 
   public static SerializedQuaternion Box(Quaternion inQ)
@@ -44,7 +44,7 @@ public class SerializedQuaternion
 
   public Quaternion Unbox()
   {
-    return new Quaternion(_q[0], _q[1], _q[2], _q[3]);
+    return new Quaternion(quat[0], quat[1], quat[2], quat[3]);
   }
 }
 
@@ -52,18 +52,18 @@ public class SerializedQuaternion
 public class SerializedTransform
 {
   [JsonProperty]
-  private SerializedVector3 _position;
+  private SerializedVector3 position;
   [JsonProperty]
-  private SerializedQuaternion _rotation;
+  private SerializedQuaternion rotation;
   [JsonProperty]
-  private SerializedVector3 _scale;
+  private SerializedVector3 scale;
 
   [JsonConstructor]
   private SerializedTransform(SerializedVector3 position, SerializedQuaternion rotation, SerializedVector3 scale)
   {
-    this._position = position;
-    this._rotation = rotation;
-    this._scale = scale;
+    this.position = position;
+    this.rotation = rotation;
+    this.scale = scale;
   }
 
   public static SerializedTransform Box(Transform transform)
@@ -76,7 +76,7 @@ public class SerializedTransform
 
   public void UnboxTo(Transform transform)
   {
-    transform.SetLocalPositionAndRotation(_position.Unbox(), _rotation.Unbox());
-    transform.localScale = _scale.Unbox();
+    transform.SetLocalPositionAndRotation(position.Unbox(), rotation.Unbox());
+    transform.localScale = scale.Unbox();
   }
 }
