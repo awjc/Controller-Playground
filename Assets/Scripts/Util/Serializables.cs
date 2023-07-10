@@ -6,12 +6,12 @@ using Newtonsoft.Json;
 public class SerializedVector3
 {
   [JsonProperty]
-  private float[] _vector3;
+  private float[] _v3;
 
   [JsonConstructor]
   private SerializedVector3(float[] _vector3)
   {
-    this._vector3 = _vector3;
+    this._v3 = _vector3;
   }
 
   public static SerializedVector3 Box(Vector3 inV)
@@ -21,7 +21,7 @@ public class SerializedVector3
 
   public Vector3 Unbox()
   {
-    return new Vector3(_vector3[0], _vector3[1], _vector3[2]);
+    return new Vector3(_v3[0], _v3[1], _v3[2]);
   }
 }
 
@@ -29,12 +29,12 @@ public class SerializedVector3
 public class SerializedQuaternion
 {
   [JsonProperty]
-  private float[] _quaternion;
+  private float[] _q;
 
   [JsonConstructor]
   private SerializedQuaternion(float[] quaternion)
   {
-    this._quaternion = quaternion;
+    this._q = quaternion;
   }
 
   public static SerializedQuaternion Box(Quaternion inQ)
@@ -44,7 +44,7 @@ public class SerializedQuaternion
 
   public Quaternion Unbox()
   {
-    return new Quaternion(_quaternion[0], _quaternion[1], _quaternion[2], _quaternion[3]);
+    return new Quaternion(_q[0], _q[1], _q[2], _q[3]);
   }
 }
 
