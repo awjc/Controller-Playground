@@ -41,30 +41,20 @@ public class CubeBalancer : MonoBehaviour, ISaveable
   public float errorAngle;
   public Vector3 errorAxis;
 
-  public string UniqueNameId()
-  {
-    // TODO(awjc) - use GetInstanceID().ToString() ?
-    return this.name;
-  }
-
   public IDictionary<string, object> ToSaveData()
   {
     var ret = new Dictionary<string, object>();
-
     ret.Add("transform", SerializedTransform.Box(this.transform));
     ret.Add("P", this.P);
     ret.Add("I", this.I);
     ret.Add("D", this.D);
     ret.Add("ScalingStrength", this.ScalingStrength);
     ret.Add("targetRotation", SerializedQuaternion.Box(this.targetRotation));
-
     return ret;
   }
 
   public void FromSaveData(IDictionary<string, object> saveData)
   {
-    Debug.Log(string.Format(">> FromJson called with >> {0}", saveData));
-
     var serializedTransform = (saveData["transform"] as JObject)?.ToObject<SerializedTransform>();
     serializedTransform?.UnboxTo(this.transform);
 

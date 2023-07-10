@@ -41,43 +41,38 @@ public class SaverLoader : MonoBehaviour
 
   public void DoSave()
   {
-    Debug.Log("Saving...");
+    string destination = Application.persistentDataPath + "/save.txt";
+    Debug.Log(string.Format("Saving to {0}", destination));
 
     List<GameObject> allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>().ToList();
     var allSaveable = Interfaces.GetAllInterfaces<ISaveable>(allObjects);
 
-    var objDict = new Dictionary<string, IDictionary<string, object>>();
+    // File structure is { gameobject: { component: <componentDict> } }
+    var objDict = new Dictionary<string, IDictionary<string, IDictionary<string, object>>>();
 
     foreach (ISaveable saveObj in allSaveable)
     {
-      var name = saveObj.UniqueNameId();
+      var goName = saveObj.GameObjectName();
+      var compName = saveObj.ComponentName();
       var data = saveObj.ToSaveData();
-      Debug.Log(string.Format("{0} : {1}", name, data));
-      objDict[name] = data;
+      if (!objDict.ContainsKey(goName))
+      {
+        objDict[goName] = new Dictionary<string, IDictionary<string, object>>();
+      }
+      objDict[goName][compName] = data;
     }
 
-    Debug.Log(string.Join(", ", allObjects));
-    Debug.Log(string.Join(", ", allSaveable));
-
     var fileData = JsonConvert.SerializeObject(objDict);
-    SaveFile(fileData);
+    System.IO.File.WriteAllText(destination, fileData);
   }
 
-  public void SaveFile(string data)
+  public void DoLoad()
   {
     string destination = Application.persistentDataPath + "/save.txt";
-    Debug.Log(destination);
-    System.IO.File.WriteAllText(destination, data);
-  }
-
-  public void LoadFile()
-  {
-    string destination = Application.persistentDataPath + "/save.txt";
+    Debug.Log(string.Format("Loading from {0}", destination));
     var data = System.IO.File.ReadAllText(destination);
-    Debug.Log(data);
-    var objDict = JsonConvert.DeserializeObject<IDictionary<string, IDictionary<string, object>>>(data);
+    var objDict = JsonConvert.DeserializeObject<IDictionary<string, IDictionary<string, IDictionary<string, object>>>>(data);
 
-    Debug.Log(string.Join(System.Environment.NewLine, objDict));
     foreach (var kv in objDict)
     {
       var go = GameObject.Find(kv.Key);
@@ -86,19 +81,14 @@ public class SaverLoader : MonoBehaviour
         var allSaveable = Interfaces.GetInterfaces<ISaveable>(go);
         foreach (var saveable in allSaveable)
         {
-          saveable.FromSaveData(kv.Value);
+          var compName = saveable.ComponentName();
+          if (kv.Value.ContainsKey(compName))
+          {
+            saveable.FromSaveData(kv.Value[compName]);
+          }
         }
       }
     }
-  }
-
-  public void DoLoad()
-  {
-    Debug.Log("Loading...");
-
-    LoadFile();
-
-    // var go = GameObject.Find(name);
   }
 
   private void OnEnable()
