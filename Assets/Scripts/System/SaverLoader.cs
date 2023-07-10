@@ -71,6 +71,7 @@ public class SaverLoader : MonoBehaviour
     string destination = Application.persistentDataPath + "/save.txt";
     Debug.Log(string.Format("Loading from {0}", destination));
     var data = System.IO.File.ReadAllText(destination);
+    // File structure is { gameobject: { component: <componentDict> } }
     var objDict = JsonConvert.DeserializeObject<IDictionary<string, IDictionary<string, IDictionary<string, object>>>>(data);
 
     foreach (var kv in objDict)
