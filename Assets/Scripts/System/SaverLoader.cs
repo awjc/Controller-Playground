@@ -50,8 +50,10 @@ public class SaverLoader : MonoBehaviour
 
     foreach (ISaveable saveObj in allSaveable)
     {
-      Debug.Log(string.Format("{0} : {1}", saveObj.UniqueNameId(), saveObj.ToJsonSaveData()));
-      objDict[saveObj.UniqueNameId()] = saveObj.ToJsonSaveData();
+      var name = saveObj.UniqueNameId();
+      var data = saveObj.ToSaveData();
+      Debug.Log(string.Format("{0} : {1}", name, data));
+      objDict[name] = data;
     }
 
     Debug.Log(string.Join(", ", allObjects));
@@ -84,7 +86,7 @@ public class SaverLoader : MonoBehaviour
         var allSaveable = Interfaces.GetInterfaces<ISaveable>(go);
         foreach (var saveable in allSaveable)
         {
-          saveable.FromJsonSaveData(kv.Value);
+          saveable.FromSaveData(kv.Value);
         }
       }
     }

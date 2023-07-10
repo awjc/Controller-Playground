@@ -3,41 +3,80 @@ using UnityEngine;
 using Newtonsoft.Json;
 
 [Serializable]
-public class SerializedTransform
+public class SerializedVector3
 {
-  public float[] _position = new float[3];
-  public float[] _rotation = new float[4];
-  public float[] _scale = new float[3];
+  [JsonProperty]
+  private float[] _vector3;
 
   [JsonConstructor]
-  public SerializedTransform(float[] position, float[] rotation, float[] scale)
+  private SerializedVector3(float[] _vector3)
+  {
+    this._vector3 = _vector3;
+  }
+
+  public static SerializedVector3 Box(Vector3 inV)
+  {
+    return new SerializedVector3(new float[] { inV.x, inV.y, inV.z });
+  }
+
+  public Vector3 Unbox()
+  {
+    return new Vector3(_vector3[0], _vector3[1], _vector3[2]);
+  }
+}
+
+[Serializable]
+public class SerializedQuaternion
+{
+  [JsonProperty]
+  private float[] _quaternion;
+
+  [JsonConstructor]
+  private SerializedQuaternion(float[] quaternion)
+  {
+    this._quaternion = quaternion;
+  }
+
+  public static SerializedQuaternion Box(Quaternion inQ)
+  {
+    return new SerializedQuaternion(new float[] { inQ.x, inQ.y, inQ.z, inQ.w });
+  }
+
+  public Quaternion Unbox()
+  {
+    return new Quaternion(_quaternion[0], _quaternion[1], _quaternion[2], _quaternion[3]);
+  }
+}
+
+[Serializable]
+public class SerializedTransform
+{
+  [JsonProperty]
+  private SerializedVector3 _position;
+  [JsonProperty]
+  private SerializedQuaternion _rotation;
+  [JsonProperty]
+  private SerializedVector3 _scale;
+
+  [JsonConstructor]
+  private SerializedTransform(SerializedVector3 position, SerializedQuaternion rotation, SerializedVector3 scale)
   {
     this._position = position;
     this._rotation = rotation;
     this._scale = scale;
   }
 
-  public SerializedTransform(Transform transform)
+  public static SerializedTransform Box(Transform transform)
   {
-    _position[0] = transform.localPosition.x;
-    _position[1] = transform.localPosition.y;
-    _position[2] = transform.localPosition.z;
-
-    _rotation[0] = transform.localRotation.x;
-    _rotation[1] = transform.localRotation.y;
-    _rotation[2] = transform.localRotation.z;
-    _rotation[3] = transform.localRotation.w;
-
-    _scale[0] = transform.localScale.x;
-    _scale[1] = transform.localScale.y;
-    _scale[2] = transform.localScale.z;
+    return new SerializedTransform(
+      SerializedVector3.Box(transform.localPosition),
+      SerializedQuaternion.Box(transform.localRotation),
+      SerializedVector3.Box(transform.localScale));
   }
 
-  public void CopyToTransform(Transform transform)
+  public void UnboxTo(Transform transform)
   {
-    transform.SetLocalPositionAndRotation(
-      new Vector3(_position[0], _position[1], _position[2]),
-      new Quaternion(_rotation[0], _rotation[1], _rotation[2], _rotation[3]));
-    transform.localScale = new Vector3(_scale[0], _scale[1], _scale[2]);
+    transform.SetLocalPositionAndRotation(_position.Unbox(), _rotation.Unbox());
+    transform.localScale = _scale.Unbox();
   }
 }

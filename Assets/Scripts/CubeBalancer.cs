@@ -18,13 +18,11 @@ Ideas:
 
 public class CubeBalancer : MonoBehaviour, ISaveable
 {
-  public float P = 1f;
-  public float I = 0f;
-  public float D = 0f;
+  public float P = 11.0f;
+  public float I = 0.0002f;
+  public float D = 0.2f;
 
-  public float ScalingStrength = 0.5f;
-
-  public Quaternion targetRot;
+  public float ScalingStrength = 20f;
 
   public Quaternion targetRotation;
 
@@ -49,29 +47,37 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     return this.name;
   }
 
-
-
-  public IDictionary<string, object> ToJsonSaveData()
+  public IDictionary<string, object> ToSaveData()
   {
     var ret = new Dictionary<string, object>();
 
-    ret.Add("transform", new SerializedTransform(this.transform));
+    ret.Add("transform", SerializedTransform.Box(this.transform));
+    ret.Add("P", this.P);
+    ret.Add("I", this.I);
+    ret.Add("D", this.D);
+    ret.Add("ScalingStrength", this.ScalingStrength);
+    ret.Add("targetRotation", SerializedQuaternion.Box(this.targetRotation));
 
-    // return ret;
-
-    // string ret = JsonConvert.SerializeObject(this, Formatting.Indented, new JsonSerializerSettings
-    // {
-    //   ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-    // });
     return ret;
-    // return JsonConvert.SerializeObject(ret);
   }
 
-  public void FromJsonSaveData(IDictionary<string, object> jsonSaveData)
+  public void FromSaveData(IDictionary<string, object> saveData)
   {
-    Debug.Log(string.Format(">> FromJson called with >> {0}", jsonSaveData));
-    var serializedTransform = (jsonSaveData["transform"] as JObject)?.ToObject<SerializedTransform>();
-    serializedTransform?.CopyToTransform(this.transform);
+    Debug.Log(string.Format(">> FromJson called with >> {0}", saveData));
+
+    var serializedTransform = (saveData["transform"] as JObject)?.ToObject<SerializedTransform>();
+    serializedTransform?.UnboxTo(this.transform);
+
+    this.P = Convert.ToSingle(saveData["P"]);
+    this.I = Convert.ToSingle(saveData["I"]);
+    this.D = Convert.ToSingle(saveData["D"]);
+    this.ScalingStrength = Convert.ToSingle(saveData["ScalingStrength"]);
+
+    var serializedTargetRotation = (saveData["targetRotation"] as JObject)?.ToObject<SerializedQuaternion>();
+    if (serializedTargetRotation != null)
+    {
+      this.targetRotation = serializedTargetRotation.Unbox();
+    }
   }
 
   private void Start()
@@ -81,11 +87,6 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     targetRotation = rigidbody.rotation;
     integral = Vector3.zero;
     integralAxis = Vector3.up;
-  }
-
-  private void TurnCube()
-  {
-    targetRotation = targetRot;
   }
 
   private void LogQ(string id, Quaternion q)

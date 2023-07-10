@@ -5,6 +5,6 @@ using Newtonsoft.Json.Linq;
 public interface ISaveable
 {
   public string UniqueNameId();
-  public IDictionary<string, object> ToJsonSaveData();
-  public void FromJsonSaveData(IDictionary<string, object> jsonSaveData);
+  public IDictionary<string, object> ToSaveData();
+  public void FromSaveData(IDictionary<string, object> jsonSaveData);
 }
