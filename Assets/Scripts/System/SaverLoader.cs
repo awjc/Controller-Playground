@@ -81,13 +81,13 @@ public class SaverLoader : MonoBehaviour
       var gameObject = GameObject.Find(gameObjectName);
       if (gameObject != null)
       {
-        var allSaveable = Interfaces.GetInterfaces<ISaveable>(gameObject);
-        foreach (var saveable in allSaveable)
+        var allSaveableComponents = Interfaces.GetInterfaces<ISaveable>(gameObject);
+        foreach (var saveableComponents in allSaveableComponents)
         {
-          var compName = saveable.ComponentName();
+          var compName = saveableComponents.ComponentName();
           if (componentDicts.ContainsKey(compName))
           {
-            saveable.FromSaveData(componentDicts[compName]);
+            saveableComponents.FromSaveData(componentDicts[compName]);
           }
         }
       }
