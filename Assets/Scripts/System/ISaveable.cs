@@ -22,5 +22,5 @@ public interface ISaveable
   }
 
   public IDictionary<string, object> ToSaveData();
-  public void FromSaveData(IDictionary<string, object> jsonSaveData);
+  public void FromSaveData(IDictionary<string, object> saveData);
 }
