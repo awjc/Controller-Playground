@@ -24,17 +24,19 @@ public class GravityTurnOn : MonoBehaviour, ISaveable
 
   // Start is called before the first frame update
   void Start()
+  {
+    rb = GetComponent<Rigidbody>();
+    Invoke("TurnOnGravity", startDelayTimeSec);
+  }
+
+  private void TurnOnGravity()
+  {
+    if (rb == null)
     {
-        rb = GetComponent<Rigidbody>();
-        Invoke("TurnOnGravity", startDelayTimeSec);
+      Debug.Log("No RigidBody attached, cannot turn on gravity");
+      return;
     }
 
-    private void TurnOnGravity() {
-        if (rb == null) {
-            Debug.Log("No RigidBody attached, cannot turn on gravity");
-            return;
-        }
-
-        rb.useGravity = true;
-    }
+    rb.useGravity = true;
+  }
 }
