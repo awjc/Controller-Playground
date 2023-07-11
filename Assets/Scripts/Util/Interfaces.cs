@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-public static class Interfaces
+public static class InterfacesUtil
 {
   public static List<T> GetInterfaces<T>(GameObject objectToSearch) where T : class
   {

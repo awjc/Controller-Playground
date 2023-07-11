@@ -74,9 +74,9 @@ public class SerializedTransform
       SerializedVector3.Box(transform.localScale));
   }
 
-  public void UnboxTo(Transform transform)
+  public void UnboxInto(Transform dest)
   {
-    transform.SetLocalPositionAndRotation(position.Unbox(), rotation.Unbox());
-    transform.localScale = scale.Unbox();
+    dest.SetLocalPositionAndRotation(position.Unbox(), rotation.Unbox());
+    dest.localScale = scale.Unbox();
   }
 }

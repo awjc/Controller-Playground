@@ -45,7 +45,7 @@ public class SaverLoader : MonoBehaviour
     Debug.Log(string.Format("Saving to {0}", destination));
 
     List<GameObject> allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>().ToList();
-    var allSaveable = Interfaces.GetAllInterfaces<ISaveable>(allObjects);
+    var allSaveable = InterfacesUtil.GetAllInterfaces<ISaveable>(allObjects);
 
     // File structure is { gameobject: { component: <componentDict> } }
     var objDict = new Dictionary<string, IDictionary<string, IDictionary<string, object>>>();
@@ -81,7 +81,7 @@ public class SaverLoader : MonoBehaviour
       var gameObject = GameObject.Find(gameObjectName);
       if (gameObject != null)
       {
-        var allSaveableComponents = Interfaces.GetInterfaces<ISaveable>(gameObject);
+        var allSaveableComponents = InterfacesUtil.GetInterfaces<ISaveable>(gameObject);
         foreach (var saveableComponents in allSaveableComponents)
         {
           var compName = saveableComponents.ComponentName();

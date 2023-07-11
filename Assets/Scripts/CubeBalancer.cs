@@ -43,31 +43,25 @@ public class CubeBalancer : MonoBehaviour, ISaveable
 
   public IDictionary<string, object> ToSaveData()
   {
-    var ret = new Dictionary<string, object>();
-    ret.Add("transform", SerializedTransform.Box(this.transform));
-    ret.Add("P", this.P);
-    ret.Add("I", this.I);
-    ret.Add("D", this.D);
-    ret.Add("ScalingStrength", this.ScalingStrength);
-    ret.Add("targetRotation", SerializedQuaternion.Box(this.targetRotation));
-    return ret;
+    var saver = ReflectionUtil.MakeSaver(this);
+    saver.Save("P");
+    saver.Save("I");
+    saver.Save("D");
+    saver.Save("ScalingStrength");
+    saver.SaveQuaternion("targetRotation");
+    saver.SaveTransform("transform");
+    return saver.Data;
   }
 
   public void FromSaveData(IDictionary<string, object> saveData)
   {
-    var serializedTransform = (saveData["transform"] as JObject)?.ToObject<SerializedTransform>();
-    serializedTransform?.UnboxTo(this.transform);
-
-    this.P = Convert.ToSingle(saveData["P"]);
-    this.I = Convert.ToSingle(saveData["I"]);
-    this.D = Convert.ToSingle(saveData["D"]);
-    this.ScalingStrength = Convert.ToSingle(saveData["ScalingStrength"]);
-
-    var serializedTargetRotation = (saveData["targetRotation"] as JObject)?.ToObject<SerializedQuaternion>();
-    if (serializedTargetRotation != null)
-    {
-      this.targetRotation = serializedTargetRotation.Unbox();
-    }
+    var loader = ReflectionUtil.MakeLoader(this, saveData);
+    loader.LoadFloat("P");
+    loader.LoadFloat("I");
+    loader.LoadFloat("D");
+    loader.LoadFloat("ScalingStrength");
+    loader.LoadQuaternion("targetRotation");
+    loader.LoadTransformInto("transform", this.transform);
   }
 
   private void Start()
