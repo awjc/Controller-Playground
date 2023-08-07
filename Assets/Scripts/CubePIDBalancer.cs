@@ -16,7 +16,7 @@ Ideas:
 */
 
 
-public class CubeBalancer : MonoBehaviour, ISaveable
+public class CubePIDBalancer : MonoBehaviour, ISaveable
 {
   public float P = 11.0f;
   public float I = 0.0002f;
@@ -41,7 +41,6 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     saver.Save("D");
     saver.Save("ScalingStrength");
     saver.SaveQuaternion("targetRotation");
-    saver.SaveTransform("transform");
     return saver.Data;
   }
 
@@ -53,7 +52,6 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     loader.LoadFloat("D");
     loader.LoadFloat("ScalingStrength");
     loader.LoadQuaternion("targetRotation");
-    loader.LoadTransformInto("transform", this.transform);
   }
 
   private void Start()
@@ -150,7 +148,7 @@ public class CubeBalancer : MonoBehaviour, ISaveable
 
     // Apply the angular velocity as force to the object's rigidbody
     rigidbody.AddTorque(scaled, ForceMode.Force);
-}
+  }
 
   private void FixedUpdate()
   {

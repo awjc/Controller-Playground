@@ -127,10 +127,25 @@ public class ReflectionUtil
       SaveData.Add(fieldName, val);
     }
 
+    public void Save(string fieldName, object val)
+    {
+      SaveData.Add(fieldName, val);
+    }
+
     public void Save<T>(string fieldName, Func<T, object> converter)
     {
       T val = GetFieldValueAsObj<T>(fieldName);
       SaveData.Add(fieldName, converter(val));
+    }
+
+    public void SaveVector3(string fieldName)
+    {
+      Save<Vector3>(fieldName, val => SerializedVector3.Box(val));
+    }
+
+    public void SaveVector3(string fieldName, Vector3 val)
+    {
+      Save(fieldName, SerializedVector3.Box(val));
     }
 
     public void SaveQuaternion(string fieldName)
@@ -224,6 +239,20 @@ public class ReflectionUtil
       SetFromSaveData<float>(fieldName, val => Convert.ToSingle(val));
     }
 
+    public void LoadVector3(string fieldName)
+    {
+      SetObjFromSaveData<SerializedVector3, Vector3>(fieldName, sv3 => sv3.Unbox());
+    }
+
+    public void LoadVector3(string fieldName, Action<Vector3> callback)
+    {
+      var result = GetSaveDataAsObj<SerializedVector3>(fieldName);
+      if (result != null)
+      {
+        callback(result.Unbox());
+      }
+    }
+
     public void LoadQuaternion(string fieldName)
     {
       SetObjFromSaveData<SerializedQuaternion, Quaternion>(fieldName, sq => sq.Unbox());
@@ -237,6 +266,6 @@ public class ReflectionUtil
 
   public static Loader MakeLoader(object obj, IDictionary<string, object> saveData = null, bool throwIfNotFound = true)
   {
-    return new Loader(obj, saveData, true);
+    return new Loader(obj, saveData, throwIfNotFound);
   }
 }

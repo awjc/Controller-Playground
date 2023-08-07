@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 public class SerializedVector3
 {
   [JsonProperty]
-  private float[] vec3;
+  private readonly float[] vec3;
 
   [JsonConstructor]
   private SerializedVector3(float[] vector3)
@@ -29,7 +29,7 @@ public class SerializedVector3
 public class SerializedQuaternion
 {
   [JsonProperty]
-  private float[] quat;
+  private readonly float[] quat;
 
   [JsonConstructor]
   private SerializedQuaternion(float[] quaternion)
@@ -52,11 +52,11 @@ public class SerializedQuaternion
 public class SerializedTransform
 {
   [JsonProperty]
-  private SerializedVector3 position;
+  private readonly SerializedVector3 position;
   [JsonProperty]
-  private SerializedQuaternion rotation;
+  private readonly SerializedQuaternion rotation;
   [JsonProperty]
-  private SerializedVector3 scale;
+  private readonly SerializedVector3 scale;
 
   [JsonConstructor]
   private SerializedTransform(SerializedVector3 position, SerializedQuaternion rotation, SerializedVector3 scale)
