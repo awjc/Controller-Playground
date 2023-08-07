@@ -9,7 +9,7 @@ public interface ISaveable
   public string GameObjectName()
   {
     // TODO(awjc) - use GetInstanceID().ToString() for something more globally unique ?
-    if (!(this is MonoBehaviour))
+    if (this is not MonoBehaviour)
     {
       throw new System.Exception("ISaveable isn't Monobehavior, can't populate GameObjectName() automatically");
     }
