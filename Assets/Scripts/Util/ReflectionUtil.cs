@@ -91,20 +91,20 @@ public class ReflectionUtil
 
   public class Saver
   {
-    private object obj { get; set; }
-    private IDictionary<string, object> saveData { get; set; }
-    public IDictionary<string, object> Data { get { return saveData; } }
-    private bool throwIfNotFound { get; set; }
+    private object Obj { get; set; }
+    private IDictionary<string, object> SaveData { get; set; }
+    public IDictionary<string, object> Data { get { return SaveData; } }
+    private bool ThrowIfNotFound { get; set; }
     public Saver(object obj, bool throwIfNotFound)
     {
-      this.obj = obj;
-      this.saveData = new Dictionary<string, object>();
-      this.throwIfNotFound = throwIfNotFound;
+      this.Obj = obj;
+      this.SaveData = new Dictionary<string, object>();
+      this.ThrowIfNotFound = throwIfNotFound;
     }
 
     private object GetFieldValue(string fieldName)
     {
-      return Get(obj, fieldName, throwIfNotFound);
+      return Get(Obj, fieldName, ThrowIfNotFound);
     }
 
     private T GetFieldValueAsObj<T>(string fieldName)
@@ -124,13 +124,13 @@ public class ReflectionUtil
     public void Save(string fieldName)
     {
       var val = GetFieldValue(fieldName);
-      saveData.Add(fieldName, val);
+      SaveData.Add(fieldName, val);
     }
 
     public void Save<T>(string fieldName, Func<T, object> converter)
     {
       T val = GetFieldValueAsObj<T>(fieldName);
-      saveData.Add(fieldName, converter(val));
+      SaveData.Add(fieldName, converter(val));
     }
 
     public void SaveQuaternion(string fieldName)
@@ -153,21 +153,21 @@ public class ReflectionUtil
 
   public class Loader
   {
-    private object obj { get; set; }
-    private IDictionary<string, object> saveData { get; set; }
-    private bool throwIfNotFound { get; set; }
+    private object Obj { get; set; }
+    private IDictionary<string, object> SaveData { get; set; }
+    private bool ThrowIfNotFound { get; set; }
     public Loader(object obj, IDictionary<string, object> saveData, bool throwIfNotFound)
     {
-      this.obj = obj;
-      this.saveData = saveData;
-      this.throwIfNotFound = throwIfNotFound;
+      this.Obj = obj;
+      this.SaveData = saveData;
+      this.ThrowIfNotFound = throwIfNotFound;
     }
 
     private object GetSaveData(string fieldName)
     {
-      if (saveData == null || !saveData.ContainsKey(fieldName))
+      if (SaveData == null || !SaveData.ContainsKey(fieldName))
       {
-        if (throwIfNotFound)
+        if (ThrowIfNotFound)
         {
           throw new System.MissingFieldException(string.Format("No save data found by field name `{0}`", fieldName));
         }
@@ -176,7 +176,7 @@ public class ReflectionUtil
           return null;
         }
       }
-      return saveData[fieldName];
+      return SaveData[fieldName];
     }
 
     private T GetSaveDataAsObj<T>(string fieldName) where T : class
@@ -198,14 +198,14 @@ public class ReflectionUtil
       var val = GetSaveData(fieldName);
       if (val != null)
       {
-        Set(obj, fieldName, converter(val), throwIfNotFound);
+        Set(Obj, fieldName, converter(val), ThrowIfNotFound);
       }
     }
 
     private void SetObjFromSaveData<T, S>(string fieldName, Func<T, S> converter) where T : class
     {
       var asObj = GetSaveDataAsObj<T>(fieldName);
-      Set(obj, fieldName, converter(asObj), throwIfNotFound);
+      Set(Obj, fieldName, converter(asObj), ThrowIfNotFound);
     }
 
     private void LoadIntoObjFromSaveData<T>(string fieldName, Action<T> loader) where T : class

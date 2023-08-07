@@ -26,14 +26,6 @@ public class CubeBalancer : MonoBehaviour, ISaveable
 
   public Quaternion targetRotation;
 
-  private Quaternion previousError;
-
-  private Vector3 integral;
-
-  private float integralAngle;
-
-  private Vector3 integralAxis;
-
   private Vector3 integralTorques;
 
   private new Rigidbody rigidbody { get { return GetComponent<Rigidbody>(); } }
@@ -69,8 +61,6 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     Debug.Log("AWJC CubeBalancer Loaded");
     Debug.Log(string.Format("Params: P {0} I {1} D {2}", P, I, D));
     targetRotation = rigidbody.rotation;
-    integral = Vector3.zero;
-    integralAxis = Vector3.up;
   }
 
   private void LogQ(string id, Quaternion q)
@@ -95,11 +85,9 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     }
   }
 
-  private AngleAxis toAngleAxis(Quaternion q)
+  private AngleAxis ToAngleAxis(Quaternion q)
   {
-    float iAngle;
-    Vector3 iAxis;
-    q.ToAngleAxis(out iAngle, out iAxis);
+    q.ToAngleAxis(out float iAngle, out Vector3 iAxis);
     // Keep rotations below 180 degrees by performing the corresponding
     // rotation on the  opposite axis
     if (iAngle >= 180.0f)
@@ -122,7 +110,7 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     LogQ("Error", error);
 
     // Calculate the proportional term
-    AngleAxis errorAA = toAngleAxis(error);
+    AngleAxis errorAA = ToAngleAxis(error);
     errorAxis = errorAA.axis;
     errorAngle = errorAA.angle;
 
@@ -175,12 +163,12 @@ public class CubeBalancer : MonoBehaviour, ISaveable
     ApplyControllerForce();
   }
 
-  private Vector3 centerAngles(Vector3 input)
+  private Vector3 CenterAngles(Vector3 input)
   {
-    return new Vector3(center(input.x), center(input.y), center(input.z));
+    return new Vector3(Center(input.x), Center(input.y), Center(input.z));
   }
 
-  private float center(float angle)
+  private float Center(float angle)
   {
     return angle > 180 ? angle - 360 : angle;
   }
