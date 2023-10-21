@@ -137,6 +137,8 @@ public class CubePIDBalancer : MonoBehaviour, ISaveable
 
     // Multiply by a global scaling strength
     Vector3 scaled = outputForce * ScalingStrength;
+    // Haven't figured out how to make it framerate-independent yet..
+    // * Time.fixedDeltaTime;
     LogV("scaled", scaled);
 
     if (System.Double.IsNaN(scaled.x) ||
