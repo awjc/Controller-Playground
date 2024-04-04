@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Random = UnityEngine.Random;
+using Unity.VisualScripting;
 
 /*
 
@@ -17,20 +19,28 @@ Ideas:
 
 public class CubePIDBalancer : MonoBehaviour, ISaveable
 {
-  public float P = 11.0f;
-  public float I = 0.0002f;
-  public float D = 0.2f;
+  public int DebugLoggingFrameCount = 0;
 
-  public float ScalingStrength = 20f;
+  public float P = 6.0f;
+  public float I = 10.0f;
+  public float D = 2.0f;
+
+  public float ScalingStrength = 0.1f;
 
   public Quaternion targetRotation;
 
   private Vector3 integralTorques;
 
+#pragma warning disable 0109 // For "new is not required" warning
   private new Rigidbody rigidbody { get { return GetComponent<Rigidbody>(); } }
+#pragma warning restore 0109
 
   public float errorAngle;
   public Vector3 errorAxis;
+
+  public int frameCount = 0;
+
+  private Vector3 lastError = Vector3.zero;
 
   public IDictionary<string, object> ToSaveData()
   {
@@ -57,17 +67,41 @@ public class CubePIDBalancer : MonoBehaviour, ISaveable
   {
     Debug.Log("AWJC CubeBalancer Loaded");
     Debug.Log(string.Format("Params: P {0} I {1} D {2}", P, I, D));
-    targetRotation = rigidbody.rotation;
+
+    // targetRotation = rigidbody.rotation;
+
+    // targetRotation = RandomRotation();
+    // targetRotation = Quaternion.Euler(10f, 148f, 77f);
+
+    targetRotation = Quaternion.Euler(30f, 45f, 55f);
+  }
+
+  public static Quaternion RandomRotation()
+  {
+    return Quaternion.Euler(
+      Random.Range(-180, 180),
+      Random.Range(-180, 180),
+      Random.Range(-180, 180));
+  }
+
+  private void DebugLog(string str)
+  {
+    if (DebugLoggingFrameCount > 0 && frameCount % DebugLoggingFrameCount == 0)
+    {
+      Debug.Log(str);
+    }
   }
 
   private void LogQ(string id, Quaternion q)
   {
-    // Debug.Log(string.Format("{0}: {1}    (Q {2}, Normalized {3})", id, q.eulerAngles, q, q.normalized));
+    DebugLog(string.Format("{0}: {1}    (Q {2}, Normalized {3})", id, q.eulerAngles, q, q.normalized));
+    var aa = ToAngleAxis(q);
+    DebugLog(string.Format("\tAngle: {0}, Axis: {1}", aa.angle, aa.axis));
   }
 
   private void LogV(string id, Vector3 v)
   {
-    // Debug.Log(string.Format("{0}: {1}", id, v));
+    DebugLog(string.Format("{0}: {1}", id, v));
   }
 
   private class AngleAxis
@@ -95,11 +129,10 @@ public class CubePIDBalancer : MonoBehaviour, ISaveable
     return new AngleAxis(iAngle, iAxis);
   }
 
-  public int frameCount = 0;
-
   private void ApplyControllerForce()
   {
     frameCount += 1;
+    DebugLog($"~~~~~~~~~~~~~~~~~~~~   FRAME {frameCount}   ~~~~~~~~~~~~~~~~~~~~");
 
     // Calculate the error between the current rotation and the target rotation
     Quaternion currentRotation = transform.rotation;
@@ -116,28 +149,26 @@ public class CubePIDBalancer : MonoBehaviour, ISaveable
     {
       return;
     }
-    float mag = errorAA.angle / 180.0f;
-    Vector3 pForce = errorAA.axis * mag * P;
+    Vector3 proportionalError = errorAA.axis.normalized * errorAA.angle;
+    Vector3 pForce = errorAA.angle * errorAA.axis;
     LogV("pForce", pForce);
 
     // Calculate the integral term
-    integralTorques += errorAA.angle * errorAA.axis;
-    Vector3 iForce = integralTorques * I;
+    integralTorques += errorAA.angle * Time.fixedDeltaTime * errorAA.axis;
+    Vector3 iForce = integralTorques;
     LogV("iForce", iForce);
 
     // Get D force component by just inverting angular velocity and scaling
-    Vector3 dForce = -rigidbody.angularVelocity * D;
-    LogV("Angular Velocity", rigidbody.angularVelocity);
+    Vector3 dForce = (proportionalError - lastError) / Time.fixedDeltaTime;
+    // LogV("Angular Velocity", rigidbody.angularVelocity);
     LogV("dForce", dForce);
 
     // Calculate the control output by just summing each of the components
-    Vector3 outputForce = pForce + iForce + dForce;
+    Vector3 outputForce = P * pForce + I * iForce + D * dForce;
     LogV("outputForce", outputForce);
 
     // Multiply by a global scaling strength
     Vector3 scaled = outputForce * ScalingStrength;
-    // Haven't figured out how to make it framerate-independent yet..
-    // * Time.fixedDeltaTime;
     LogV("scaled", scaled);
 
     if (System.Double.IsNaN(scaled.x) ||
@@ -149,6 +180,8 @@ public class CubePIDBalancer : MonoBehaviour, ISaveable
 
     // Apply the angular velocity as force to the object's rigidbody
     rigidbody.AddTorque(scaled, ForceMode.Force);
+
+    lastError = proportionalError;
   }
 
   private void FixedUpdate()
